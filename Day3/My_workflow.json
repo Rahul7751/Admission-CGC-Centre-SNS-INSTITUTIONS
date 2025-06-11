@@ -1,0 +1,195 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e55f261a-809c-4abb-954b-79f47f8f5979",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1A9v1sExGxYQiRlZr0rLzOxzGQoaENoI2qDdSi8bhrmI",
+          "mode": "list",
+          "cachedResultName": "Invoice",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1A9v1sExGxYQiRlZr0rLzOxzGQoaENoI2qDdSi8bhrmI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Invoice ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1A9v1sExGxYQiRlZr0rLzOxzGQoaENoI2qDdSi8bhrmI/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        220,
+        0
+      ],
+      "id": "0edff451-e2b0-48a8-a38b-f05d3ce3df3d",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LUAShdrY2BkSzEII",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "\"Check if each invoice is overdue and still marked as Unpaid. If it is, pass it to the next step to send a reminder.\"",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        640,
+        20
+      ],
+      "id": "4c258048-c36e-49a0-8ac1-892b94788bcc",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        540,
+        300
+      ],
+      "id": "c95b5c1d-9e84-4766-8181-b10561b178df",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "s98erM37lGI3jlLR",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = new Date();\nreturn items.filter(item => {\n  const dueDate = new Date(item.json['Due Date']);\n  const status = item.json['Status'];\n  return dueDate < today && status !== 'Paid' && status !== 'Reminder Sent';\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        0
+      ],
+      "id": "7c236a63-bd03-4d3c-b225-083b1e831813",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "sendTo": "shruthikrishnamoorthy2109@gmail.com",
+        "subject": " Payment Reminder for Invoice",
+        "emailType": "text",
+        "message": "=Dear shruthi\n\nWe hope you're doing well!\n\nThis is a gentle reminder that your payment for **Invoice **, amounting to ₹6788, was due on **11.06.2025** and is currently marked as unpaid.\n\nWe kindly request you to complete the payment at your earliest convenience to avoid any late charges and to help us maintain smooth financial operations.\n\nIf you have already made the payment, please disregard this message. Otherwise, feel free to reach out if you need any assistance or clarification.\n\nThank you for your attention to this matter.\n\nWarm regards,  \nFinance Team  \nSNS Group  \n📧 finance@sns.com  \n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1080,
+        20
+      ],
+      "id": "407df0bc-6472-4e69-9866-c354369beb5c",
+      "name": "Gmail",
+      "webhookId": "9ce06caf-c89b-4433-993d-5158b8e9c322",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "xxYGDSBIrXDsW6j7",
+          "name": "Gmail account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b9b1f470-7307-4187-bf85-0b8997a6fce7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "84f54b588d63138a8db0df365b3c3da4b84204e33aa68b6396ff7fb47aa85611"
+  },
+  "id": "t4ntZMPBRrDVPxYz",
+  "tags": []
+}
